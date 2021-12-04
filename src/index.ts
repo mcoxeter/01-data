@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Page, webkit } from 'playwright';
+import fs from 'fs';
 
 async function app() {
   var myArgs = process.argv.slice(2);
@@ -16,26 +17,63 @@ async function app() {
   stats = { ...stats, ...fcfAverage };
 
   const growthAnlysis = await getGrowthEstimates(page, symbol);
-  console.log(growthAnlysis);
   stats = {
     ...stats,
     'Growth Next 5 Years (per annum)': growthAnlysis['Next 5 Years (per annum)']
   };
-  console.log(stats);
+  // console.log(stats);
 
-  console.log('Free cash flow', stats['FreeCashFlowAverage']);
-  console.log('Total Cash', stats['Total Cash (mrq)']);
-  console.log('Total Debt', stats['Total Debt (mrq)']);
-  console.log(
-    'Total number of outstanding shares',
-    stats['Shares Outstanding 5']
+  // console.log('Free cash flow', stats['FreeCashFlowAverage']);
+  // console.log('Total Cash', stats['Total Cash (mrq)']);
+  // console.log('Total Debt', stats['Total Debt (mrq)']);
+  // console.log(
+  //   'Total number of outstanding shares',
+  //   stats['Shares Outstanding 5']
+  // );
+  // console.log('Our Growth Rate', stats['Growth']);
+  // console.log('Analysts Growth Rate', stats['Growth Next 5 Years (per annum)']);
+  // console.log('Discount', 15);
+  // console.log('Last FCF Multiple (For Terminal Value)', 10);
+  // console.log('Margin of Safety (%)', 50);
+  // console.log('Current Share price', stats['Price']);
+
+  const response = await page.request.get(
+    `https://public-api.quickfs.net/v1/data/all-data/${symbol}?api_key=781e2fb667feea2f43e3078f6c3a0b4f0f7122a9`
   );
-  console.log('Our Growth Rate', stats['Growth']);
-  console.log('Analysts Growth Rate', stats['Growth Next 5 Years (per annum)']);
-  console.log('Discount', 15);
-  console.log('Last FCF Multiple (For Terminal Value)', 10);
-  console.log('Margin of Safety (%)', 50);
-  console.log('Current Share price', stats['Price']);
+
+  const myJson: any = await response.json();
+
+  stats = {
+    ...stats,
+    data: { ...myJson }
+  };
+
+  const path = `C:/Users/Mike/OneDrive - Digital Sparcs/Investing/Value Investing Process/Business analysis/Evaluation/${symbol}`;
+  const requiredPaths = [path, `${path}/core`];
+  const nowDate = new Date();
+  const padNum = (num: number) => num.toString().padStart(2, '0');
+
+  const nowDateStr = `${nowDate.getFullYear()}.${padNum(
+    nowDate.getMonth() + 1
+  )}.${padNum(nowDate.getDate())}`;
+
+  requiredPaths.forEach((p) => {
+    if (!fs.existsSync(p)) {
+      fs.mkdirSync(p);
+    }
+  });
+
+  console.log('Writing ', `${path}/core/${nowDateStr}.json`);
+  try {
+    fs.writeFileSync(
+      `${path}/core/${nowDateStr}.json`,
+      JSON.stringify(stats, undefined, 4)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+
+  //
 
   await browser.close();
 }
@@ -52,10 +90,9 @@ async function getStatisticsPage(page: Page, symbol: string) {
 
   let statistics: any = {};
 
-  const header = await page.$('[data-test="quote-header"]');
-  if (header) {
-    const quoteDivs = await header.$$('div > div > div > span');
-    const rawPrice = await quoteDivs[2].innerText();
+  const price = await page.$('[data-test="qsp-price"]');
+  if (price) {
+    const rawPrice = await price.innerText();
     statistics['Price'] = Number(cleanTextNumber(rawPrice));
   }
 
