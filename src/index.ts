@@ -21,21 +21,6 @@ async function app() {
     ...stats,
     'Growth Next 5 Years (per annum)': growthAnlysis['Next 5 Years (per annum)']
   };
-  // console.log(stats);
-
-  // console.log('Free cash flow', stats['FreeCashFlowAverage']);
-  // console.log('Total Cash', stats['Total Cash (mrq)']);
-  // console.log('Total Debt', stats['Total Debt (mrq)']);
-  // console.log(
-  //   'Total number of outstanding shares',
-  //   stats['Shares Outstanding 5']
-  // );
-  // console.log('Our Growth Rate', stats['Growth']);
-  // console.log('Analysts Growth Rate', stats['Growth Next 5 Years (per annum)']);
-  // console.log('Discount', 15);
-  // console.log('Last FCF Multiple (For Terminal Value)', 10);
-  // console.log('Margin of Safety (%)', 50);
-  // console.log('Current Share price', stats['Price']);
 
   const response = await page.request.get(
     `https://public-api.quickfs.net/v1/data/all-data/${symbol}?api_key=781e2fb667feea2f43e3078f6c3a0b4f0f7122a9`
