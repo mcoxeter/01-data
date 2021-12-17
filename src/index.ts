@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Page, webkit } from 'playwright';
 import fs from 'fs';
+const api = require('./apikey.json');
 
 async function app() {
   var myArgs = process.argv.slice(2);
@@ -17,13 +18,17 @@ async function app() {
   stats = { ...stats, ...fcfAverage };
 
   const growthAnlysis = await getGrowthEstimates(page, symbol);
+  const growthAnlysisValue = growthAnlysis
+    ? (growthAnlysis['Next 5 Years (per annum)'] as string)
+    : 'unavailable';
+
   stats = {
     ...stats,
-    'Growth Next 5 Years (per annum)': growthAnlysis['Next 5 Years (per annum)']
+    'Growth Next 5 Years (per annum)': growthAnlysisValue
   };
 
   const response = await page.request.get(
-    `https://public-api.quickfs.net/v1/data/all-data/${symbol}?api_key=781e2fb667feea2f43e3078f6c3a0b4f0f7122a9`
+    `https://public-api.quickfs.net/v1/data/all-data/${symbol}?api_key=${api.apikey}`
   );
 
   const myJson: any = await response.json();
@@ -106,6 +111,7 @@ async function getStatisticsPage(page: Page, symbol: string) {
   return statistics;
 }
 
+// TODO: Kill this, it is better to get this from public-api.quickfs.net
 async function getFreeCashFlowAverage(page: Page, symbol: string) {
   await page.goto(
     `https://finance.yahoo.com/quote/${symbol}/cash-flow?p=${symbol}`
@@ -142,7 +148,10 @@ async function getFreeCashFlowAverage(page: Page, symbol: string) {
   };
 }
 
-async function getGrowthEstimates(page: Page, symbol: string) {
+async function getGrowthEstimates(
+  page: Page,
+  symbol: string
+): Promise<any | null> {
   await page.goto(
     `https://finance.yahoo.com/quote/${symbol}/analysis?p=${symbol}`
   );
@@ -154,6 +163,10 @@ async function getGrowthEstimates(page: Page, symbol: string) {
   let growthEstimates: any = {};
 
   const sixthTable = tables[5];
+  if (sixthTable === undefined) {
+    return null;
+  }
+
   const tbody = await sixthTable.$('tbody');
 
   if (tbody) {
