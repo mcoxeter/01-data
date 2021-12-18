@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Page, webkit } from 'playwright';
 import fs from 'fs';
-const api = require('./apikey.json');
+const config = require('./config.json');
 
 async function app() {
   var myArgs = process.argv.slice(2);
@@ -28,7 +28,7 @@ async function app() {
   };
 
   const response = await page.request.get(
-    `https://public-api.quickfs.net/v1/data/all-data/${symbol}?api_key=${api.apikey}`
+    `https://public-api.quickfs.net/v1/data/all-data/${symbol}?api_key=${config.apikey}`
   );
 
   const myJson: any = await response.json();
@@ -38,8 +38,8 @@ async function app() {
     data: { ...myJson }
   };
 
-  const path = `C:/Users/Mike/OneDrive - Digital Sparcs/Investing/Value Investing Process/Business analysis/Evaluation/${symbol}`;
-  const requiredPaths = [path, `${path}/core`];
+  const path = `${config.path}/${symbol}`;
+  const requiredPaths = [path, `${path}/01-data`];
   const nowDate = new Date();
   const padNum = (num: number) => num.toString().padStart(2, '0');
 
@@ -129,9 +129,12 @@ async function getFreeCashFlowAverage(page: Page, symbol: string) {
 
   let total = 0;
 
+  let fcfArray: number[] = [];
+
   for (let fcf of freecashFlows.slice(0, 3)) {
     const rawText = cleanTextNumber(await fcf.innerText());
     const value = Number(rawText) * 1000;
+    fcfArray.push(value);
     total += value;
   }
 
@@ -143,6 +146,7 @@ async function getFreeCashFlowAverage(page: Page, symbol: string) {
   const growth = Number(endingValue) / Number(beginingValue) - 1;
 
   return {
+    FFC: fcfArray,
     Growth: `${Math.round(growth * 100)}%`,
     FreeCashFlowAverage: total / 3
   };
