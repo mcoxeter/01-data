@@ -53,10 +53,10 @@ async function app() {
     }
   });
 
-  console.log('Writing ', `${path}/core/${nowDateStr}.json`);
+  console.log('Writing ', `${path}/01-data/${nowDateStr}.json`);
   try {
     fs.writeFileSync(
-      `${path}/core/${nowDateStr}.json`,
+      `${path}/01-data/${nowDateStr}.json`,
       JSON.stringify(stats, undefined, 4)
     );
   } catch (err) {

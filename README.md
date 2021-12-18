@@ -25,3 +25,20 @@ This is an example of a config.json file:
 In this example the program will gather data on Facebook
 
 `npm start -- FB`
+
+## Output
+
+The output of this program is financial data in json form. It will be outputted into a sub folder of your path in the config file.
+
+### Outpur folder structure
+
+_path_/_stock-name_/_date_.json
+
+e.g.
+C:/Business analysis/Evaluation/FB/2021.12.18.json
+
+## What does it do?
+
+It scrapes the data from finance.yahoo.com and also extracts data from https://quickfs.net/.
+
+These two places give all the data we need to make a full analysis.
