@@ -32,10 +32,10 @@ The output of this program is financial data in json form. It will be outputted 
 
 ### Outpur folder structure
 
-_path_/_stock-name_/_date_.json
+_path_/_stock-name_/01-data/_date_.json
 
 e.g.
-C:/Business analysis/Evaluation/FB/2021.12.18.json
+C:/Business analysis/Evaluation/FB/01-data/2021.12.18.json
 
 ## What does it do?
 
