@@ -28,7 +28,9 @@ async function app() {
   };
 
   const response = await page.request.get(
-    `https://public-api.quickfs.net/v1/data/all-data/${symbol}?api_key=${config.apikey}`
+    `https://public-api.quickfs.net/v1/data/all-data/${yahooSymbolToQuickFSSymbol(
+      symbol
+    )}?api_key=${config.apikey}`
   );
 
   const myJson: any = await response.json();
@@ -66,6 +68,10 @@ async function app() {
   //
 
   await browser.close();
+}
+
+function yahooSymbolToQuickFSSymbol(yahooSymbol: string): string {
+  return yahooSymbol.replace('.TO', ':CA');
 }
 
 async function getStatisticsPage(page: Page, symbol: string) {
