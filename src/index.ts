@@ -85,7 +85,7 @@ async function evaluateStock(symbol: string): Promise<void> {
 }
 
 function yahooSymbolToQuickFSSymbol(yahooSymbol: string): string {
-  return yahooSymbol.replace('.TO', ':CA');
+  return yahooSymbol.replace('-', '.').replace('.TO', ':CA');
 }
 
 async function getStatisticsPage(page: Page, symbol: string) {
