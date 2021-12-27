@@ -26,6 +26,9 @@ In this example the program will gather data on Facebook
 
 `npm start -- FB`
 
+In this example the program will gather data on Facebook and Adobe
+`npm start -- FB ABDE`
+
 ## Output
 
 The output of this program is financial data in json form. It will be outputted into a sub folder of your path in the config file.

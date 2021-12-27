@@ -5,7 +5,13 @@ const config = require('./config.json');
 
 async function app() {
   var myArgs = process.argv.slice(2);
-  const symbol = myArgs[0];
+
+  for (const symbol of myArgs) {
+    await evaluateStock(symbol);
+  }
+}
+
+async function evaluateStock(symbol: string): Promise<void> {
   const browser = await webkit.launch({
     headless: true
   });
