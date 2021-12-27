@@ -27,6 +27,7 @@ In this example the program will gather data on Facebook
 `npm start -- FB`
 
 In this example the program will gather data on Facebook and Adobe
+
 `npm start -- FB ABDE`
 
 ## Output
