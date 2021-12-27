@@ -28,7 +28,7 @@ This is an example of a config.json file:
   "evaluate": [
     { "Symbol": "ADBE", "OverrideGrowth": 25 },
     { "Symbol": "ATVI" },
-    { "Symbol": "BRK.B" },
+    { "Symbol": "BRK-B" },
     { "Symbol": "CMG" },
   ]
 }
