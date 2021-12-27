@@ -33,10 +33,6 @@ async function evaluateStock(symbol: string): Promise<void> {
 
   let stats = await getStatisticsPage(page, symbol);
 
-  const fcfAverage = await getFreeCashFlowAverage(page, symbol);
-
-  stats = { ...stats, ...fcfAverage };
-
   const growthAnlysis = await getGrowthEstimates(page, symbol);
   const growthAnlysisValue = growthAnlysis
     ? (growthAnlysis['Next 5 Years (per annum)'] as string)
@@ -100,7 +96,7 @@ async function getStatisticsPage(page: Page, symbol: string) {
   const buttons = await page.$$('button');
   await buttons[0].click();
 
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('networkidle', { timeout: 0 });
 
   let statistics: any = {};
 
@@ -135,47 +131,6 @@ async function getStatisticsPage(page: Page, symbol: string) {
   return statistics;
 }
 
-// TODO: Kill this, it is better to get this from public-api.quickfs.net
-async function getFreeCashFlowAverage(page: Page, symbol: string) {
-  await page.goto(
-    `https://finance.yahoo.com/quote/${symbol}/cash-flow?p=${symbol}`
-  );
-
-  await page.waitForLoadState('networkidle');
-
-  const lines = await page.$$('[data-test="fin-row"]');
-
-  const lastLine = lines[lines.length - 1];
-
-  const innerDivs = await lastLine.$$('[data-test="fin-col"]');
-
-  const [ttm, ...freecashFlows] = innerDivs;
-
-  let total = 0;
-
-  let fcfArray: number[] = [];
-
-  for (let fcf of freecashFlows.slice(0, 3)) {
-    const rawText = cleanTextNumber(await fcf.innerText());
-    const value = Number(rawText) * 1000;
-    fcfArray.push(value);
-    total += value;
-  }
-
-  const endingValue = cleanTextNumber(await freecashFlows[0].innerText());
-  const beginingValue = cleanTextNumber(
-    await freecashFlows[freecashFlows.length - 1].innerText()
-  );
-
-  const growth = Number(endingValue) / Number(beginingValue) - 1;
-
-  return {
-    FFC: fcfArray,
-    Growth: `${Math.round(growth * 100)}%`,
-    FreeCashFlowAverage: total / 3
-  };
-}
-
 async function getGrowthEstimates(
   page: Page,
   symbol: string
@@ -184,7 +139,7 @@ async function getGrowthEstimates(
     `https://finance.yahoo.com/quote/${symbol}/analysis?p=${symbol}`
   );
 
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('networkidle', { timeout: 0 });
 
   const tables = await page.$$('table');
 
