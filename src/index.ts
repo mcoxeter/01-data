@@ -6,12 +6,26 @@ const config = require('./config.json');
 async function app() {
   var myArgs = process.argv.slice(2);
 
+  if (myArgs.length === 0) {
+    // When no arguments are passed then we use the evaluate.json file as a list of stocks to evaluate.
+    const path = `${config.path}`;
+    const evaluationList = require(`${path}/evaluate.json`);
+
+    console.log('Evaluating stocks from evaluate.json');
+
+    for (const evaluate of evaluationList.evaluate) {
+      await evaluateStock(evaluate.Symbol);
+    }
+    return;
+  }
+
   for (const symbol of myArgs) {
     await evaluateStock(symbol);
   }
 }
 
 async function evaluateStock(symbol: string): Promise<void> {
+  console.log('Procesing stock ' + symbol);
   const browser = await webkit.launch({
     headless: true
   });
@@ -46,7 +60,7 @@ async function evaluateStock(symbol: string): Promise<void> {
     data: { ...myJson }
   };
 
-  const path = `${config.path}/${symbol}`;
+  const path = `${config.path}/Evaluation/${symbol}`;
   const requiredPaths = [path, `${path}/01-data`];
   const nowDate = new Date();
   const padNum = (num: number) => num.toString().padStart(2, '0');
@@ -70,8 +84,6 @@ async function evaluateStock(symbol: string): Promise<void> {
   } catch (err) {
     console.error(err);
   }
-
-  //
 
   await browser.close();
 }

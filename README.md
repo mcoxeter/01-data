@@ -16,19 +16,34 @@ This is an example of a config.json file:
 ```json
 {
   "apikey": "781e2fb667..hidden..0b4f0f7122a9",
-  "path": "C:/Business analysis/Evaluation"
+  "path": "C:/Business analysis"
+}
+```
+
+3. create an evaluate.json file in the 'path' folder.
+   This file can drive the evaluation list. The following is the structure of the file:
+
+```
+{
+  "evaluate": [
+    { "Symbol": "ADBE", "OverrideGrowth": 25 },
+    { "Symbol": "ATVI" },
+    { "Symbol": "BRK.B" },
+    { "Symbol": "CMG" },
+  ]
 }
 ```
 
 ## Usage
 
-In this example the program will gather data on Facebook
+`npm start`
+In this example the program will gather data of the symbols in the evaluate.json file
 
 `npm start -- FB`
-
-In this example the program will gather data on Facebook and Adobe
+In this example the program will gather data on Facebook
 
 `npm start -- FB ADBE`
+In this example the program will gather data on Facebook and Adobe
 
 ## Output
 
