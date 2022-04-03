@@ -33,7 +33,17 @@ async function evaluateStock(symbol: string): Promise<void> {
 
   let stats = await getStatisticsPage(page, symbol);
 
+  console.log('Procesing stock ' + symbol + '. Stats gathered');
+
   const growthAnlysis = await getGrowthEstimates(page, symbol);
+  console.log('Procesing stock ' + symbol + '. Growth gathered');
+
+  const insiderBuysInLast90Days = await getNumberOfInsiderTradeBuysInLast90Days(
+    page,
+    symbol
+  );
+  console.log('Procesing stock ' + symbol + '. Insider trades gathered');
+
   const growthAnlysisValue = growthAnlysis
     ? (growthAnlysis['Next 5 Years (per annum)'] as string)
     : 'unavailable';
@@ -49,11 +59,14 @@ async function evaluateStock(symbol: string): Promise<void> {
     )}?api_key=${config.apikey}`
   );
 
+  console.log('Procesing stock ' + symbol + '. QuickFS data gathered');
+
   const myJson: any = await response.json();
 
   stats = {
     ...stats,
-    data: { ...myJson }
+    data: { ...myJson },
+    insiderBuysInLast90Days: insiderBuysInLast90Days
   };
 
   const path = `${config.path}/Evaluation/${symbol}`;
@@ -88,11 +101,18 @@ function yahooSymbolToQuickFSSymbol(yahooSymbol: string): string {
   return yahooSymbol.replace('-', '.').replace('.TO', ':CA');
 }
 
-async function getStatisticsPage(page: Page, symbol: string) {
-  await page.goto(
-    `https://finance.yahoo.com/quote/${symbol}/key-statistics?p=${symbol}`
-  );
+async function goto(page: Page, url: string, retry: number) {
+  for (let i = 0; i < retry; i++) {
+    try {
+      await page.goto(url);
+      return;
+    } catch {}
+  }
+}
 
+async function getStatisticsPage(page: Page, symbol: string) {
+  const url = `https://finance.yahoo.com/quote/${symbol}/key-statistics?p=${symbol}`;
+  await goto(page, url, 4);
   const buttons = await page.$$('button');
   await buttons[0].click();
 
@@ -135,9 +155,8 @@ async function getGrowthEstimates(
   page: Page,
   symbol: string
 ): Promise<any | null> {
-  await page.goto(
-    `https://finance.yahoo.com/quote/${symbol}/analysis?p=${symbol}`
-  );
+  const url = `https://finance.yahoo.com/quote/${symbol}/analysis?p=${symbol}`;
+  await goto(page, url, 4);
 
   await page.waitForLoadState('networkidle', { timeout: 0 });
 
@@ -171,6 +190,25 @@ async function getGrowthEstimates(
     }
   }
   return growthEstimates;
+}
+
+async function getNumberOfInsiderTradeBuysInLast90Days(
+  page: Page,
+  symbol: string
+): Promise<number> {
+  const url = `http://www.openinsider.com/screener?s=${symbol}&o=&pl=&ph=&ll=&lh=&fd=90&fdr=&td=0&tdr=&fdlyl=&fdlyh=&daysago=30&xp=1&vl=&vh=&ocl=&och=&sic1=-1&sicl=100&sich=9999&isofficer=1&iscob=1&isceo=1&ispres=1&iscoo=1&iscfo=1&isgc=1&isvp=1&grp=0&nfl=&nfh=&nil=&nih=&nol=&noh=&v2l=&v2h=&oc2l=&oc2h=&sortcol=0&cnt=100&page=1`;
+
+  await goto(page, url, 4);
+
+  await page.waitForLoadState('networkidle', { timeout: 0 });
+
+  const results = await page.$('#results');
+  const resultsTxt = await results?.innerText();
+  let numberInsiders = 0;
+  if (resultsTxt?.length ?? 0 > 0) {
+    numberInsiders = Number(resultsTxt?.split('results.')[0]);
+  }
+  return numberInsiders;
 }
 
 function cleanTextNumber(text: string): string {
